@@ -291,7 +291,10 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
   }
 
   // Göksu yaması: gizli anahtar olmadan komut kabul edilmez.
-  if (!isValidDaemonToken(req.headers[GOKSU_TOKEN_HEADER])) {
+  // İstisna: salt okunur GET /status (sadece bağlantı durumunu verir, komut çalıştıramaz).
+  // Agent Reach doctor bu uç noktayı anahtarsız sorguluyor.
+  const isReadOnlyStatus = req.method === 'GET' && pathname === '/status';
+  if (!isReadOnlyStatus && !isValidDaemonToken(req.headers[GOKSU_TOKEN_HEADER])) {
     jsonResponse(res, 403, { ok: false, error: 'Forbidden: invalid daemon token' });
     return;
   }
