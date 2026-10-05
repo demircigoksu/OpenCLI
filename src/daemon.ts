@@ -26,6 +26,7 @@ import { DEFAULT_DAEMON_PORT, isIgnorableDaemonPortEnv, unsupportedDaemonPortEnv
 import { EXIT_CODES } from './errors.js';
 import { log } from './logger.js';
 import { PKG_VERSION } from './version.js';
+import { GOKSU_TOKEN_HEADER, getAllowedExtensionOrigin, isValidDaemonToken } from './goksu-auth.js';
 import { DEFAULT_CONTEXT_ID } from './browser/profile.js';
 import { recordExtensionVersion } from './update-check.js';
 import {
@@ -289,6 +290,23 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
     return;
   }
 
+  // Göksu yaması: gizli anahtar olmadan komut kabul edilmez.
+  if (!isValidDaemonToken(req.headers[GOKSU_TOKEN_HEADER])) {
+    jsonResponse(res, 403, { ok: false, error: 'Forbidden: invalid daemon token' });
+    return;
+  }
+
+  // Göksu yaması: eklentiyi yeniden yükle (otomatik güncellemeden sonra).
+  if (req.method === 'POST' && pathname === '/goksu/reload-extension') {
+    let sent = 0;
+    for (const profile of activeProfiles()) {
+      profile.ws.send(JSON.stringify({ type: 'goksu-reload' }));
+      sent++;
+    }
+    jsonResponse(res, 200, { ok: true, sent });
+    return;
+  }
+
   if (req.method === 'GET' && pathname === '/status') {
     const uptime = process.uptime();
     const mem = process.memoryUsage();
@@ -503,6 +521,9 @@ const wss = new WebSocketServer({
     // ws://localhost:19825/ext and impersonate the Extension.  Real Chrome
     // Extensions send origin chrome-extension://<id>.
     const origin = req.headers['origin'] as string | undefined;
+    // Göksu yaması: izinli eklenti kimliği tanımlıysa sadece o bağlanabilir.
+    const allowed = getAllowedExtensionOrigin();
+    if (allowed) return origin === allowed;
     return !origin || origin.startsWith('chrome-extension://');
   },
 });

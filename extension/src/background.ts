@@ -199,6 +199,12 @@ async function connectAttempt(): Promise<void> {
     if (ws !== thisWs) return;
     try {
       const command = JSON.parse(event.data as string) as Command;
+      // Göksu yaması: otomatik güncellemeden sonra daemon eklentiyi yeniden yükletir.
+      if ((command as unknown as { type?: string }).type === 'goksu-reload') {
+        console.log('[opencli] Reload requested by daemon');
+        chrome.runtime.reload();
+        return;
+      }
       const result = await executeWithJournal(command, handleCommand);
       // The socket may have been replaced while a long command ran. Deliver
       // the result on the freshest open socket — the daemon correlates by id,

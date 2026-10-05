@@ -1,8 +1,9 @@
 import { DEFAULT_DAEMON_PORT, isIgnorableDaemonPortEnv, unsupportedDaemonPortEnvMessage } from '../constants.js';
+import { GOKSU_TOKEN_HEADER, getDaemonToken } from '../goksu-auth.js';
 
 const DAEMON_PORT = DEFAULT_DAEMON_PORT;
 const DAEMON_URL = `http://127.0.0.1:${DAEMON_PORT}`;
-const OPENCLI_HEADERS = { 'X-OpenCLI': '1' };
+const OPENCLI_HEADERS = { 'X-OpenCLI': '1', [GOKSU_TOKEN_HEADER]: getDaemonToken() };
 
 class UnsupportedDaemonPortEnvError extends Error {
   constructor(value: string) {
