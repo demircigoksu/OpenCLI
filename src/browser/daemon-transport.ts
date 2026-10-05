@@ -1,3 +1,4 @@
+// Modified by Göksu Demirci, 2026 (unofficial fork of jackwener/OpenCLI). Değiştirildi, ayrıntı: FORK.md
 import { DEFAULT_DAEMON_PORT, isIgnorableDaemonPortEnv, unsupportedDaemonPortEnvMessage } from '../constants.js';
 import { GOKSU_TOKEN_HEADER, getDaemonToken } from '../goksu-auth.js';
 

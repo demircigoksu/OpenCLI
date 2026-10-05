@@ -1,3 +1,4 @@
+// Modified by Göksu Demirci, 2026 (unofficial fork of jackwener/OpenCLI). Değiştirildi, ayrıntı: FORK.md
 /**
  * OpenCLI — Service Worker (background script).
  *
